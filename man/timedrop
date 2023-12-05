@@ -1,0 +1,31 @@
+.\"Manpage for timedrop
+.\" Contact erock530@github to correct errors or typos.
+.TH man 8 "08 Jul 2022" "1.1" "timedrop man page"
+.SH NAME
+timedrop
+.SH DESCRIPTION
+This installs a service that feeds JSON time/date information for a list of time zones.
+The below configuration would make this JSON data available through nginx with a /time endpoint.
+
+
+If the file /etc/nginx/conf.d/timedrop.conf does NOT exist:
+Make sure the below lines are added to timedrop.conf:
+
+server {
+  listen 81;
+  servername localhost;
+  location /time {
+      proxy_pass http://127.0.0.1:9987/?cmd=time;
+  }
+  }
+
+
+After those lines are in the conf file, please run the following command:
+ nginx -s reload
+
+.SH OPTIONS
+There are currently no options
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Eric Colangelo (erock530@github)
