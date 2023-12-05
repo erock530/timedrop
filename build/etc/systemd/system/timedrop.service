@@ -1,0 +1,20 @@
+[Unit]
+Description=Timedrop Service
+After=syslog.target network.target
+#StartLimitBurst=5
+#StartLimitIntervalSec=10
+
+[Service]
+Type=simple
+ExecStart=/bin/bash -c "/bin/timedrop"
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=timedrop
+#Restart=on-failure
+#RestartSec=30s
+User=root
+Group=root
+TimeoutSec=300
+
+[Install]
+WantedBy=multi-user.target
