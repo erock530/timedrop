@@ -31,7 +31,7 @@ build: ## Build the binary file
 
 docker: ## Build docker image
 		@VERSION=$$(./build/version.sh)
-		@podman build -t cynest/timedrop:$$VERSION -f Dockerfile .
+		@podman build -t erock530/timedrop:$$VERSION -f Dockerfile .
 
 rpm: ## Build the RPM
 	@echo "Building RPM ..."
