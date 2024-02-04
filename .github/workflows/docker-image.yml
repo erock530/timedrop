@@ -13,7 +13,7 @@ jobs:
         run: echo "REL_VER=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       - name: Set vars
         id: vars
-        run: echo "tag=${REL_VER#v}" >> $GITHUB_OUTPUT
+        run: echo "tag=${REL_VER}" >> $GITHUB_OUTPUT
       - name: Login to GitHub Package Registry
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.repository }} --password-stdin
       - name: Get current date
