@@ -31,7 +31,7 @@ Requires:   nginx
 Package provides a service which either runs as a microservice behind an nginx endpoint.
 
 %prep
-%setup -q
+#%setup -q
 
 %build
 set +x
@@ -47,8 +47,8 @@ mkdir -p %{_builddir}/%{name}/bin
 mkdir -p %{_builddir}/%{name}/etc
 mkdir -p %{_builddir}/%{name}/etc/systemd
 mkdir -p %{_builddir}/%{name}/etc/systemd/system
-mkdir -p %{_builddir}/%{name}/nginx
-mkdir -p %{_builddir}/%{name}/nginx/conf.d
+mkdir -p %{_builddir}/%{name}/etc/nginx
+mkdir -p %{_builddir}/%{name}/etc/nginx/conf.d
 mkdir -p %{_builddir}/%{name}/usr
 mkdir -p %{_builddir}/%{name}/usr/local
 mkdir -p %{_builddir}/%{name}/usr/local/share
@@ -59,13 +59,13 @@ echo " Building binaries"
 cd $TIMEDROP
 go build -o %{_builddir}/%{name}/bin/timedrop -ldflags "-X main.Version={{VERSION}}{{RELEASE}}%{?dist}" $TIMEDROP/src
 
-echo "	Done Build Phase"
 
 # Copy files
 cp -rf $TIMEDROP/build/etc/systemd/system/timedrop.service %{_builddir}/%{name}/etc/systemd/system/
 cp -rf $TIMEDROP/build/etc/nginx/conf.d/timedrop.conf %{_builddir}/%{name}/etc/nginx/conf.d/
 cp -rf $TIMEDROP/man/timedrop %{_builddir}/%{name}/usr/local/share/man/man8/timedrop.8
 
+echo "	Done Build Phase"
 
 %install
 echo "  Begin Install Phase"
@@ -75,8 +75,8 @@ mkdir -p %{buildroot}/bin
 mkdir -p %{buildroot}/etc
 mkdir -p %{buildroot}/etc/systemd
 mkdir -p %{buildroot}/etc/systemd/system
-mkdir -p %{buildroot}/nginx
-mkdir -p %{buildroot}/nginx/conf.d
+mkdir -p %{buildroot}/etc/nginx
+mkdir -p %{buildroot}/etc/nginx/conf.d
 mkdir -p %{buildroot}/usr
 mkdir -p %{buildroot}/usr/local
 mkdir -p %{buildroot}/usr/local/share
@@ -86,7 +86,7 @@ mkdir -p %{buildroot}/usr/local/share/man/man8
 # Copy files
 cp %{_builddir}/%{name}/bin/* %{buildroot}/bin/
 cp %{_builddir}/%{name}/etc/systemd/system/* %{buildroot}/etc/systemd/system/
-cp %{_builddir}/%{name}/nginx/conf.d/* %{buildroot}/nginx/conf.d/
+cp %{_builddir}/%{name}/etc/nginx/conf.d/* %{buildroot}/etc/nginx/conf.d/
 cp %{_builddir}/%{name}/usr/local/share/man/man8/* %{buildroot}/usr/local/share/man/man8/
 
 echo "  Done Install Phase"
