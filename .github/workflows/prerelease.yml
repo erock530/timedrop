@@ -1,0 +1,33 @@
+on:
+    workflow_dispatch:
+  
+name: Create RPM Pre-Release
+
+jobs:
+    build:
+        name: Create RPM Pre-Release ${{ github.ref_name }}
+        runs-on: ubuntu-latest
+
+        steps:
+        - name: Checkout code
+          uses: actions/checkout@master
+          with:
+            submodules: 'true'
+
+        - name: Set up Go 1.21
+          uses: actions/setup-go@v2
+          with:
+            go-version: 1.21
+          id: go
+          
+        - name: Build the RPM file
+          run: "make rpm"
+
+        - name: Release with Notes
+          uses: softprops/action-gh-release@v1
+          with:
+            files: |
+              /tmp/rpmbuild/RPMS/x86_64/timedrop*.rpm
+            prerelease: true
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
