@@ -29,6 +29,9 @@ version: ## Build version info
 build: ## Build the binary file
 	@build/make_binaries.sh
 
+docker: ## Build docker image
+		@VERSION=$$(./build/version.sh)
+		@podman build -t cynest/timedrop:$$VERSION -f Dockerfile .
 
 rpm: ## Build the RPM
 	@echo "Building RPM ..."
