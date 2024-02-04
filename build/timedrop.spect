@@ -1,0 +1,124 @@
+# Don't try fancy stuff like debuginfo, which is useless on binary-only
+# packages. Don't strip binary too
+# Be sure buildpolicy set to do nothing
+%define        __spec_install_post %{nil}
+%define          debug_package %{nil}
+%define        __os_install_post %{_dbpath}/brp-compress
+
+%if 0%{?rhel} == 7
+    %define dist .el7
+%endif
+
+%if 0%{?rhel} == 8
+    %define dist .el8
+%endif
+
+%if 0%{?rhel} == 9
+    %define dist .el9
+%endif
+
+Summary: Microservice for time which returns JSON
+Name: timedrop
+Version: {{VERSION}}
+Release: {{RELEASE}}%{?dist}
+Group: Applications/erock530
+License: GPR
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
+URL: https://github.com/erock530/timedrop
+Requires:   nginx
+
+%description
+Package provides a service which either runs as a microservice behind an nginx endpoint.
+
+%prep
+%setup -q
+
+%build
+set +x
+echo "	timedrop v{{VERSION}}-{{RELEASE}}%{?dist}"
+echo "	Begin Build Phase"
+
+TIMEDROP="%{_sourcedir}"
+
+rm -rf %{_builddir}/%{name}/*
+
+# Make directories
+mkdir -p %{_builddir}/%{name}/bin
+mkdir -p %{_builddir}/%{name}/etc
+mkdir -p %{_builddir}/%{name}/etc/systemd
+mkdir -p %{_builddir}/%{name}/etc/systemd/system
+mkdir -p %{_builddir}/%{name}/nginx
+mkdir -p %{_builddir}/%{name}/nginx/conf.d
+mkdir -p %{_builddir}/%{name}/usr
+mkdir -p %{_builddir}/%{name}/usr/local
+mkdir -p %{_builddir}/%{name}/usr/local/share
+mkdir -p %{_builddir}/%{name}/usr/local/share/man
+mkdir -p %{_builddir}/%{name}/usr/local/share/man/man8
+
+echo " Building binaries"
+cd $TIMEDROP
+go build -o %{_builddir}/%{name}/bin/timedrop -ldflags "-X main.Version={{VERSION}}{{RELEASE}}%{?dist}" $TIMEDROP/src
+
+echo "	Done Build Phase"
+
+# Copy files
+cp -rf $TIMEDROP/build/etc/systemd/system/timedrop.service %{_builddir}/%{name}/etc/systemd/system/
+cp -rf $TIMEDROP/build/etc/nginx/conf.d/timedrop.conf %{_builddir}/%{name}/etc/nginx/conf.d/
+cp -rf $TIMEDROP/man/timedrop %{_builddir}/%{name}/usr/local/share/man/man8/timedrop.8
+
+
+%install
+echo "  Begin Install Phase"
+rm -rf %{buildroot}
+
+mkdir -p %{buildroot}/bin
+mkdir -p %{buildroot}/etc
+mkdir -p %{buildroot}/etc/systemd
+mkdir -p %{buildroot}/etc/systemd/system
+mkdir -p %{buildroot}/nginx
+mkdir -p %{buildroot}/nginx/conf.d
+mkdir -p %{buildroot}/usr
+mkdir -p %{buildroot}/usr/local
+mkdir -p %{buildroot}/usr/local/share
+mkdir -p %{buildroot}/usr/local/share/man
+mkdir -p %{buildroot}/usr/local/share/man/man8
+
+# Copy files
+cp %{_builddir}/%{name}/bin/* %{buildroot}/bin/
+cp %{_builddir}/%{name}/etc/systemd/system/* %{buildroot}/etc/systemd/system/
+cp %{_builddir}/%{name}/nginx/conf.d/* %{buildroot}/nginx/conf.d/
+cp %{_builddir}/%{name}/usr/local/share/man/man8/* %{buildroot}/usr/local/share/man/man8/
+
+echo "  Done Install Phase"
+
+%post
+
+echo "  Begin Post Install Phase"
+mandb -q
+systemctl daemon-reload
+nginx -s reload
+systemctl enable --now timedrop
+echo "  Done Post Install Phase"
+
+%clean
+echo "  Cleaning Build Directories"
+rm -rf %{buildroot}
+rm -rf %{_builddir}/%{name}
+
+%files
+%defattr(-,root,root) 
+%attr(755,root,root) /bin/timedrop
+%attr(644,root,root) /etc/systemd/system/timedrop.service
+%attr(644,root,root) /etc/nginx/conf.d/timedrop.conf
+%attr(644,root,root) /usr/local/share/man/man8/timedrop.8
+
+%preun
+#if [ $1 == "0" ]; then # rpm is getting removed. if $1 = 1 then it's an upgrade
+/usr/bin/systemctl --no-reload stop timedrop
+/usr/bin/systemctl --no-reload disable timedrop
+
+%postun
+mandb -q
+systemctl daemon-reload
+
+%changelog

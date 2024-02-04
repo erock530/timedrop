@@ -1,0 +1,21 @@
+name: my workflow
+on:
+  release:
+    branches:
+      - 1.1.4
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Login to GitHub Package Registry
+        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.repository }} --password-stdin
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +%s)"
+      - name: Build the Docker image
+        run: docker build --file Dockerfile.multistage --tag ghcr.io/erock530/timedrop:${{ steps.date.outputs.date }} .
+      - name: Tag the Docker image
+        run: docker tag ghcr.io/erock530/timedrop:${{ steps.date.outputs.date }} ghcr.io/erock530/timedrop:1.1.4
+      - name: Push the Docker image to the registry
+        run: docker push ghcr.io/erock530/timedrop:1.1.4

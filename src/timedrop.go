@@ -2,6 +2,7 @@ package timedrop
 
 import (
 	"crypto/rand"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -13,25 +14,59 @@ import (
 var (
 	timeCompleteStr string
 	listenPort      string
+
+//	sha1ver         string // sha1 revision used to build the app
+//	buildTime       string // when the exe was built
+//	Version         string // application version
 )
+
+// Function for flag usage/help
+func flagUsage() {
+	fmt.Printf("timedrop JASON time service\n")
+	fmt.Printf("Usage: %s [OPTIONS]\n", os.Args[0])
+	flag.PrintDefaults()
+}
 
 func RunServer() {
 	// Debug mode - for testing purposes
-	debugMode := false
+	//	debugMode := false
 
-	fmt.Println("timedrop service starting up ...")
+	// App is containerized
+	//	isContainerized := false
+
+	flag.Usage = flagUsage
+	debugMode := flag.Bool("debug", false, "Debug Mode")
+	isContainerized := flag.Bool("container", false, "App is a container. This removes the need to include /?cmd=time in the request url.")
+	flag.Parse()
+
+	//	fmt.Println("timedrop v" + Version + " starting up ...")
+	if *debugMode {
+		fmt.Println("DEBUG Mode Enabled")
+	}
+	if *isContainerized {
+		fmt.Println("Application running in a container. /?cmd=time not needed in request url")
+	}
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-
 		// Pass any cmd arguments to the cmdHandler() func
 		theCmd := r.URL.Query().Get("cmd")
-		cmdHandler(w, r, theCmd)
+		if *debugMode {
+			fmt.Println("DEBUG: Requested endpoint: " + theCmd)
+		}
+
+		if *isContainerized {
+			cmdHandler(w, r, "time") // If a container, then always return the 'time' command
+		} else {
+			cmdHandler(w, r, theCmd)
+
+		}
 	})
 
-	if debugMode {
-		listenPort = "localhost:9999"
+	if *isContainerized {
+		listenPort = ":9987" // listens on all ips. important if in a container
 	} else {
-		listenPort = "localhost:9987"
+		listenPort = "localhost:9987" // listens only on localhost due to this service sitting behind nginx
 	}
+
 	err := http.ListenAndServe(listenPort, nil)
 
 	if err != nil {
@@ -74,6 +109,7 @@ func cmdHandler(w http.ResponseWriter, r *http.Request, theCmd string) {
 		timeCompleteStr = strings.TrimSuffix(timeCompleteStr, ",") + "}"
 		bodyContent(w, r, timeCompleteStr)
 	default:
+		bodyContent(w, r, "Error: Missing /time on requested path")
 	}
 
 }
@@ -171,4 +207,13 @@ func isDST(t time.Time) bool {
 	}
 
 	return julOffset > janOffset
+}
+
+// Simple implementation of an integer minimum
+// Adapted from: https://gobyexample.com/testing-and-benchmarking
+func IntMin(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }

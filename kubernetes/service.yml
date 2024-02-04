@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: timedrop-svc
+  labels:
+          app.kubernetes.io/name: timedrop
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/name: timedrop
+  ports:
+    - name: http
+      protocol: TCP
+      # Port accessible inside cluster
+      port: 80
+      # Port to forward to inside the pod
+      targetPort: 9987
+  externalIPs:
+    # Change this to an external IP you have available if not in a cloud-provider.
+    # If you're running on a cloud provider, comment out the entire externalIPs: section.
+    - 192.168.1.202
