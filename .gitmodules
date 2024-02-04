@@ -1,0 +1,3 @@
+[submodule ".circleci/semver"]
+	path = .circleci/semver
+	url = git@github.com:erock530/semver.git

@@ -1,10 +1,24 @@
 .\"Manpage for timedrop
-.\" Contact erock530@github to correct errors or typos.
+.\" Contact ecolangelo@novetta.com to correct errors or typos.
 .TH man 8 "08 Jul 2022" "1.1" "timedrop man page"
 .SH NAME
 timedrop
+
 .SH DESCRIPTION
 This installs a service that feeds JSON time/date information for a list of time zones.
+
+
+.SH CONTAINER
+Once you have the image loaded into docker, use the following command to spin up the container:
+# podman run -d -p 8080:9987 --name timedrop-svc IMAGE-ID
+
+The container will be reached using the following command:
+# curl localhost:8080
+
+You should see a JSON output.
+
+
+.SH NGINX
 The below configuration would make this JSON data available through nginx with a /time endpoint.
 
 
@@ -23,9 +37,30 @@ server {
 After those lines are in the conf file, please run the following command:
  nginx -s reload
 
+
+.SH DATA
+The data that is returned to the user is in JSON format for times in the below counties:
+
+ "UTC"                 // UTC Time
+ "America/Chicago"  // US CST Time
+ "Asia/Kabul"       // Afghanistan
+ "Africa/Bamako"    // Mali
+ "Africa/Niamey"    // Niger
+ "Africa/Tunis"     // Tunisia
+ "Africa/Tripoli"   // Libya
+ "Asia/Damascus"    // Syria
+ "Asia/Baghdad"     // Iraq
+ "Africa/Mogadishu" // Somalia
+ "Asia/Aden"        // Yemen
+
+A Useful website for these references: https://timezonedb.com/time-zones
+
+
 .SH OPTIONS
-There are currently no options
+The /bin/timedrop binary has a '--debug' flag that can be used to place the service into debug mode.
+
 .SH BUGS
 No known bugs.
+
 .SH AUTHOR
-Eric Colangelo (erock530@github)
+Eric Colangelo (eric.colangelo@afs.com)
