@@ -13,7 +13,7 @@ jobs:
         run: echo "REL_VER=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       - name: Set vars
         id: vars
-        run: echo "tag=${REL_VER}" >> $GITHUB_OUTPUT
+        run: echo "tag=${REL_VER#v}" >> $GITHUB_OUTPUT
       - name: Login to GitHub Package Registry
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.repository }} --password-stdin
       - name: Get current date
@@ -24,4 +24,4 @@ jobs:
       - name: Tag the Docker image
         run: docker tag ghcr.io/erock530/timedrop:${{ steps.date.outputs.date }} ghcr.io/erock530/timedrop:${{ steps.vars.outputs.tag }}
       - name: Push the Docker image to the registry
-        run: docker push ghcr.io/erock530/timedrop:${{ steps.vars.outputs.tag }}#v
+        run: docker push ghcr.io/erock530/timedrop:${{ steps.vars.outputs.tag }}
